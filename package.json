@@ -1,0 +1,13 @@
+{
+  "name": "exercise-promises",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "script": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.13",
+    "jest": "^24.8.0"
+  }
+}
