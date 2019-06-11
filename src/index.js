@@ -29,14 +29,22 @@ async function getDriverWithMultipleVehicles() {
   return noOfdrivers;
 }
 
-async function getVehicleDetails(vehicles) {
-  const result = [];
-  for (const id of vehicles) {
-    const details = await getVehicle(id);
-    let { plate, manufacturer } = details;
-    result.push({ plate, manufacturer });
+async function getMostTrips() {
+  const trips = await getTrips();
+  let drivers = {};
+  for (let [index, trip] of trips.entries()) {
+    trip.tripTotal = parseInt(trip.billedAmount.replace(/,/, ''));
+    const tripTotal = trip.tripTotal;
+    let driverId = trip.driverID;
+
+    if (!drivers[driverId]) {
+      drivers[driverId] = { driverId, trips: 1, tripTotal };
+    } else {
+      drivers[driverId].trips++;
+      drivers[driverId].tripTotal += tripTotal;
+    }
   }
-  return result;
+  return drivers;
 }
 
 
@@ -63,13 +71,25 @@ async function analysis() {
   }, 0);
   const noOfDriversWithMoreThanOneVehicle = await getDriverWithMultipleVehicles();
 
+  const groups = await getMostTrips();
+
+  const sortedByTrips = Object.values(groups).sort((a, b) => b.trips - a.trips);
+  const driverWithMostTrips = sortedByTrips[0].driverId;
+  let noOfTrips = sortedByTrips[0].trips;
+  let totalAmountEarned = sortedByTrips[0].tripTotal;
+  let driverDetails = await getDriver(driverWithMostTrips);
+  let { name, email, phone } = driverDetails;
+
+  let mostTripsByDriver = { name, email, phone, noOfTrips, totalAmountEarned };
+
   const result = {
     noOfCashTrips: cashTrips.length,
     noOfNonCashTrips: nonCashTrips.length,
     billedTotal: cashBilledTotal + nonCashBilledTotal,
     cashBilledTotal,
     nonCashBilledTotal,
-    noOfDriversWithMoreThanOneVehicle
+    noOfDriversWithMoreThanOneVehicle,
+    mostTripsByDriver
   };
 
   return result;
