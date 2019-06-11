@@ -1,51 +1,53 @@
-const { getDriver, getTrips, getVehicle } = require('./api');
+const { getDriver, getTrips } = require('./api');
+const { getDriverWithMultipleVehicles, getMostTrips } = require('./helpers/index')
 
 
 
-async function getAllDrivers() {
-  const trips = await getTrips();
-  const driverIDs = trips.map(trip => trip.driverID);
-  const uniqueDriverIDs = new Set(driverIDs);
-  const allDrivers = [];
 
-  try {
-    for (id of uniqueDriverIDs) {
-      const result = await getDriver(id);
-      result.id = id;
-      allDrivers.push(result);
-    }
-  } catch (error) {}
+// async function getAllDrivers() {
+//   const trips = await getTrips();
+//   const driverIDs = trips.map(trip => trip.driverID);
+//   const uniqueDriverIDs = new Set(driverIDs);
+//   const allDrivers = [];
 
-  return allDrivers;
-}
-async function getDriverWithMultipleVehicles() {
-  const drivers = await getAllDrivers();
-  let noOfdrivers = 0;
-  for (let [key, value] of Object.entries(drivers)) {
-    if (value.vehicleID.length > 1) {
-      noOfdrivers++;
-    }
-  }
-  return noOfdrivers;
-}
+//   try {
+//     for (id of uniqueDriverIDs) {
+//       const result = await getDriver(id);
+//       result.id = id;
+//       allDrivers.push(result);
+//     }
+//   } catch (error) {}
 
-async function getMostTrips() {
-  const trips = await getTrips();
-  let drivers = {};
-  for (let [index, trip] of trips.entries()) {
-    trip.tripTotal = parseInt(trip.billedAmount.replace(/,/, ''));
-    const tripTotal = trip.tripTotal;
-    let driverId = trip.driverID;
+//   return allDrivers;
+// }
+// async function getDriverWithMultipleVehicles() {
+//   const drivers = await getAllDrivers();
+//   let noOfdrivers = 0;
+//   for (let [key, value] of Object.entries(drivers)) {
+//     if (value.vehicleID.length > 1) {
+//       noOfdrivers++;
+//     }
+//   }
+//   return noOfdrivers;
+// }
 
-    if (!drivers[driverId]) {
-      drivers[driverId] = { driverId, trips: 1, tripTotal };
-    } else {
-      drivers[driverId].trips++;
-      drivers[driverId].tripTotal += tripTotal;
-    }
-  }
-  return drivers;
-}
+// async function getMostTrips() {
+//   const trips = await getTrips();
+//   let drivers = {};
+//   for (let [index, trip] of trips.entries()) {
+//     trip.tripTotal = parseInt(trip.billedAmount.replace(/,/, ''));
+//     const tripTotal = trip.tripTotal;
+//     let driverId = trip.driverID;
+
+//     if (!drivers[driverId]) {
+//       drivers[driverId] = { driverId, trips: 1, tripTotal };
+//     } else {
+//       drivers[driverId].trips++;
+//       drivers[driverId].tripTotal += tripTotal;
+//     }
+//   }
+//   return drivers;
+// }
 
 
 /**
