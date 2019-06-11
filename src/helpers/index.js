@@ -1,5 +1,7 @@
 const { getDriver, getTrips, getVehicle } = require('../api/index');
 
+
+
 async function getAllDrivers() {
   const trips = await getTrips();
   const driverIDs = trips.map(trip => trip.driverID);
@@ -45,9 +47,44 @@ async function getMostTrips() {
   return drivers;
 }
 
+async function getTripsByDriver(id) {
+  const allTripsarray = await getTrips();
+  let tripsByDriver = [];
+
+  for (const [index, trip] of allTripsarray.entries()) {
+    if (trip.driverID == id) {
+      trip.tripTotal = parseInt(trip.billedAmount.replace(/,/, ''));
+      const { tripTotal, user, pickup, destination, created, isCash } = trip;
+      const trips = {
+        user: user.name,
+        created,
+        pickup: pickup.address,
+        destination: destination.address,
+        billed: tripTotal,
+        isCash
+      };
+      tripsByDriver.push(trips);
+    }
+  }
+  return tripsByDriver;
+}
+
+async function getVehicleDetails(vehicles) {
+  const result = [];
+  for (const id of vehicles) {
+    const details = await getVehicle(id);
+    let { plate, manufacturer } = details;
+    result.push({ plate, manufacturer });
+  }
+  return result;
+}
+
+
 
 module.exports = {
   getAllDrivers,
   getDriverWithMultipleVehicles,
-  getMostTrips
+  getMostTrips,
+  getTripsByDriver,
+  getVehicleDetails
 };
