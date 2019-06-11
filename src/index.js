@@ -1,54 +1,5 @@
-const { getDriver, getTrips } = require('./api');
-const { getDriverWithMultipleVehicles, getMostTrips } = require('./helpers/index')
-
-
-
-
-// async function getAllDrivers() {
-//   const trips = await getTrips();
-//   const driverIDs = trips.map(trip => trip.driverID);
-//   const uniqueDriverIDs = new Set(driverIDs);
-//   const allDrivers = [];
-
-//   try {
-//     for (id of uniqueDriverIDs) {
-//       const result = await getDriver(id);
-//       result.id = id;
-//       allDrivers.push(result);
-//     }
-//   } catch (error) {}
-
-//   return allDrivers;
-// }
-// async function getDriverWithMultipleVehicles() {
-//   const drivers = await getAllDrivers();
-//   let noOfdrivers = 0;
-//   for (let [key, value] of Object.entries(drivers)) {
-//     if (value.vehicleID.length > 1) {
-//       noOfdrivers++;
-//     }
-//   }
-//   return noOfdrivers;
-// }
-
-// async function getMostTrips() {
-//   const trips = await getTrips();
-//   let drivers = {};
-//   for (let [index, trip] of trips.entries()) {
-//     trip.tripTotal = parseInt(trip.billedAmount.replace(/,/, ''));
-//     const tripTotal = trip.tripTotal;
-//     let driverId = trip.driverID;
-
-//     if (!drivers[driverId]) {
-//       drivers[driverId] = { driverId, trips: 1, tripTotal };
-//     } else {
-//       drivers[driverId].trips++;
-//       drivers[driverId].tripTotal += tripTotal;
-//     }
-//   }
-//   return drivers;
-// }
-
+const { getDriver, getTrips, getVehicle } = require('./api');
+const { getAllDrivers, getDriverWithMultipleVehicles, getMostTrips, getTripsByDriver, getVehicleDetails } = require('./helpers/index')
 
 /**
  * This function should return the trip data analysis
@@ -112,8 +63,41 @@ async function analysis() {
  *
  * @returns {any} Driver report data
  */
-async function driverReport() {}
+async function driverReport() {
+  let result = [];
+
+  const drivers = await getAllDrivers();
+  const mostTrips = await getMostTrips();
+
+  for (let driver of drivers) {
+    const { name, id, phone, vehicleID } = driver;
+    const vehicles = await getVehicleDetails(vehicleID);
+    const trips = await getTripsByDriver(id);
+    const cashTrips = trips.filter(trip => trip.isCash);
+    const nonCashTrips = trips.filter(trip => !trip.isCash);
+    const totalCashAmount = cashTrips.reduce((total, amount) => total + amount.billed, 0);
+    const totalNonCashAmount = nonCashTrips.reduce((total, amount) => total + amount.billed, 0);
+
+    resultObject = {
+      fullname: name,
+      id,
+      phone,
+      noOfTrips: mostTrips[id].trips,
+      noOfVehicles: vehicleID.length,
+      vehicles,
+      noOfCashTrips: cashTrips.length,
+      noOfNonCashTrips: nonCashTrips.length,
+      totalAmountEarned: totalCashAmount + totalNonCashAmount,
+      totalCashAmount,
+      totalNonCashAmount,
+      trips
+    };
+    result.push(resultObject);
+  }
+  return result;
+}
 
 analysis().then(data => console.log(data));
+driverReport().then(data => console.log(data));
 
 module.exports = { analysis, driverReport };
