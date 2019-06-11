@@ -16,9 +16,18 @@ async function analysis() {
     trip.tripTotal = Number(trip.billedAmount.replace(/,/, ''));
     return total + trip.tripTotal;
   }, 0);
+  const nonCashTrips = trips.filter(trip => trip.isCash === false);
+  const nonCashBilledTotal = nonCashTrips.reduce((total, trip) => {
+    trip.tripTotal = Number(trip.billedAmount.replace(/,/, ''));
+    totalCash = total + trip.tripTotal;
+    return Number(totalCash.toFixed(2));
+  }, 0);
 
   const result = {
-    noOfCashTrips: cashTrips.length
+    noOfCashTrips: cashTrips.length,
+    noOfNonCashTrips: nonCashTrips.length,
+    billedTotal: cashBilledTotal + nonCashBilledTotal,
+    cashBilledTotal
   };
 
   return result;
