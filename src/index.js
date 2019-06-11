@@ -48,7 +48,6 @@ async function getMostTrips() {
 }
 
 
-
 /**
  * This function should return the trip data analysis
  * Don't forget to write tests
@@ -82,6 +81,15 @@ async function analysis() {
 
   let mostTripsByDriver = { name, email, phone, noOfTrips, totalAmountEarned };
 
+  const sortedByBills = Object.values(groups).sort((a, b) => b.tripTotal - a.tripTotal);
+  const driverWithHighestBill = sortedByBills[0].driverId;
+  noOfTrips = sortedByBills[0].trips;
+  totalAmountEarned = sortedByBills[0].tripTotal;
+  driverDetails = await getDriver(driverWithHighestBill);
+  driverDetails = { name, email, phone } = driverDetails;
+
+  const highestEarningDriver = { name, email, phone, noOfTrips, totalAmountEarned };
+
   const result = {
     noOfCashTrips: cashTrips.length,
     noOfNonCashTrips: nonCashTrips.length,
@@ -89,7 +97,8 @@ async function analysis() {
     cashBilledTotal,
     nonCashBilledTotal,
     noOfDriversWithMoreThanOneVehicle,
-    mostTripsByDriver
+    mostTripsByDriver,
+    highestEarningDriver
   };
 
   return result;
