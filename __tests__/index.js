@@ -48,6 +48,28 @@ describe('driver report', () => {
   });
 });
 
+describe("driver report", () => {
+  test("matches the required data format", async () => {
+    const data = await driverReport();
+
+    expect(data[0]).toEqual({
+      fullName: expect.any(String),
+      id: expect.any(String),
+      phone: expect.any(String),
+      noOfTrips: expect.any(Number),
+      noOfVehicles: expect.any(Number),
+      vehicles: expect.any(Array),
+      noOfCashTrips: expect.any(Number),
+      noOfNonCashTrips: expect.any(Number),
+      totalAmountEarned: expect.any(Number),
+      totalCashAmount: expect.any(Number),
+      totalNonCashAmount: expect.any(Number),
+      trips: expect.any(Array)
+    });
+    expect(data.length).toBe(9);
+  });
+});
+
 describe('My own tests go here - I should update this description', () => {
   test('something', () => {
     expect(true).toEqual(true);

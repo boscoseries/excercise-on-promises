@@ -1,28 +1,34 @@
 const { getDriver, getTrips, getVehicle } = require('../api/index');
 
-
+const allTrips = getTrips();
+const resolvedPromises = Promise.resolve(allTrips).then(data => data);
 
 async function getAllDrivers() {
-  const trips = await getTrips();
+  const trips = await resolvedPromises;
   const driverIDs = trips.map(trip => trip.driverID);
-  const uniqueDriverIDs = new Set(driverIDs);
-  const allDrivers = [];
+  const uniqueIDs = new Set(driverIDs);
+  uniqueDriverIDs = [...uniqueIDs];
 
-  try {
-    for (id of uniqueDriverIDs) {
-      const result = await getDriver(id);
-      result.id = id;
-      allDrivers.push(result);
-    }
-  } catch (error) {}
-
-  return allDrivers;
+  const e = uniqueDriverIDs.map(id => {
+    return getDriver(id)
+      .then(driver => {
+        driver.id = id;
+        return driver;
+      })
+      .catch(err => {
+        return { id, vehicleID: [] };
+      });
+  });
+  return Promise.all(e).then(drivers => {
+    return drivers;
+  });
 }
+
 async function getDriverWithMultipleVehicles() {
   const drivers = await getAllDrivers();
   let noOfdrivers = 0;
-  for (let [key, value] of Object.entries(drivers)) {
-    if (value.vehicleID.length > 1) {
+  for (const driver of drivers) {
+    if (driver.vehicleID.length > 1) {
       noOfdrivers++;
     }
   }
@@ -30,7 +36,7 @@ async function getDriverWithMultipleVehicles() {
 }
 
 async function getMostTrips() {
-  const trips = await getTrips();
+  const trips = await resolvedPromises;
   let drivers = {};
   for (let [index, trip] of trips.entries()) {
     trip.tripTotal = parseInt(trip.billedAmount.replace(/,/, ''));
@@ -48,7 +54,7 @@ async function getMostTrips() {
 }
 
 async function getTripsByDriver(id) {
-  const allTripsarray = await getTrips();
+  const allTripsarray = await resolvedPromises;
   let tripsByDriver = [];
 
   for (const [index, trip] of allTripsarray.entries()) {
@@ -69,17 +75,22 @@ async function getTripsByDriver(id) {
   return tripsByDriver;
 }
 
-async function getVehicleDetails(vehicles) {
+async function getVehicleDetails(vehiclesID) {
   const result = [];
-  for (const id of vehicles) {
-    const details = await getVehicle(id);
-    let { plate, manufacturer } = details;
-    result.push({ plate, manufacturer });
-  }
-  return result;
+  const vehicleDetails = vehiclesID.map(vehicleId => {
+    return getVehicle(vehicleId)
+      .then(data => {
+        let { plate, manufacturer } = data;
+        result.push({ plate, manufacturer });
+        return result;
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  });
+
+  return Promise.all(vehicleDetails).then(details => details);
 }
-
-
 
 module.exports = {
   getAllDrivers,
