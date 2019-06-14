@@ -79,7 +79,7 @@ async function driverReport() {
     const totalNonCashAmount = nonCashTrips.reduce((total, amount) => total + amount.billed, 0);
 
     resultObject = {
-      fullname: name,
+      fullName: name,
       id,
       phone,
       noOfTrips: mostTrips[id].trips,
